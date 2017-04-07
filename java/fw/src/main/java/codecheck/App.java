@@ -1,30 +1,7 @@
 package codecheck;
 
-import java.util.HashMap;
-
-class MultiSet<S> {
-    private HashMap<S, Integer> map;
-    public MultiSet() {
-        map = new HashMap<S, Integer>();
-    }
-    public void add(S elem) {
-        int num = map.containsKey(elem) ? map.get(elem) : 0;
-        map.put(elem, num + 1);
-    }
-    public void remove(S elem) {
-        if(!map.containsKey(elem)) return;
-        int num = map.get(elem);
-        if(num == 1) {
-            map.remove(elem);
-        } else {
-            map.put(elem, num - 1);
-        }
-    }
-    public int getCount(S elem) {
-        int num = map.containsKey(elem) ? map.get(elem) : 0;
-        return num;
-    }
-}
+import java.util.LinkedList;
+import java.io.InputStream;
 
 public class App {
     public static final String[] AI_NAME = {"FIRST", "SECOND"};
@@ -33,15 +10,38 @@ public class App {
         if(args.length < 3) {
             throw new IllegalArgumentException("At least 3 argments are required");
         }
-        String[] aiCommand = {args[0], args[1]};
-        for(String s: aiCommand) {
+        final String[] AI_COMMAND = {args[0], args[1]};
+        for(String s: AI_COMMAND) {
             System.out.println(s);
         }
-        MultiSet<String> words = new MultiSet<String>();
+        LinkedList<String> words = new LinkedList<String>();
         for(int i=3; i<args.length; i++) {
-            words.add(args[i]);
+            words.addLast(args[i]);
         }
         String currentWord = args[2];
         int turn = 0;
+
+        while(true) {
+            words.addFirst(AI_COMMAND[turn]);
+            ProcessBuilder aiPb = new ProcessBuilder(words);
+            words.removeFirst();
+            try {
+                Process aiProcess = aiPb.start();
+                aiProcess.waitFor();
+                InputStream aiOutput = aiProcess.getInputStream();
+            } catch(Exception e) {
+                e.printStackTrace();
+            }
+
+            turn = 1 - turn;
+        }
 	}
+
+    private long first(String s) {
+        return s.charAt(0);
+    }
+
+    private long last(String s) {
+        return s.charAt(s.length() - 1);
+    }
 }
