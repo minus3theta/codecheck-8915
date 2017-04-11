@@ -17,6 +17,7 @@ public class App {
         final String[] AI_COMMAND = {args[0], args[1]};
         LinkedList<String> words = new LinkedList<String>();
         for(int i=3; i<args.length; i++) {
+            assert(args[i].length() > 0);
             words.addLast(args[i]);
         }
         String currentWord = args[2];
@@ -47,12 +48,20 @@ public class App {
             BufferedReader reader =
                 new BufferedReader(new InputStreamReader(p.getInputStream()));
             boolean end = p.waitFor(TIMELIMIT, TimeUnit.SECONDS);
-            if(end) {
-                String ret = reader.readLine();
-                return ret != null ? ret : "";
+            if(!end) {
+                reader.close();
+                p.destroy();
+                System.err.println("Time Limit Exceeded");
+                return "";
             }
-            p.destroy();
-            return "";
+            String ret = reader.readLine();
+            if(reader.readLine() != null) {
+                System.err.println("Too much output");
+                reader.close();
+                return "";
+            }
+            reader.close();
+            return ret != null ? ret : "";
         } catch(Exception e) {
             e.printStackTrace();
         }
