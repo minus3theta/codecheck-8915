@@ -1,11 +1,16 @@
 package codecheck;
 
 import java.util.LinkedList;
+import java.util.Set;
 import java.util.Map;
 import java.util.HashMap;
 import java.util.OptionalInt;
+import java.util.Random;
 
 public class App {
+    private static final int SIZE_THRESHOLD = 50;
+    private static final int SEARCH_MAX = 5000;
+
     public static void main(String[] args) {
         if(args.length < 1) {
             throw new IllegalArgumentException("At least 1 argument is required");
@@ -25,11 +30,15 @@ public class App {
             val.put(last, count + 1);
         }
         // show(graph);
-        int hand = win(currentLast, graph)
+        HashMap<HashMap<Integer, HashMap<Integer, Integer>>, Boolean> state =
+            new HashMap<>();
+        int hand = (words.size() < SIZE_THRESHOLD ?
+                    win(currentLast, graph, state) : OptionalInt.empty())
             .orElseGet(() -> {
                     HashMap<Integer, Integer> val = graph.get(currentLast);
                     if(val == null) return 0;
-                    return val.keySet().iterator().next();
+                    Set<Integer> keys = val.keySet();
+                    return (int)keys.toArray()[(new Random()).nextInt(keys.size())];
                 });
         for(String s: words) {
             if(first(s) == currentLast && last(s) == hand) {
@@ -51,13 +60,15 @@ public class App {
                                                    new String(new int[]{lst}, 0, 1) + " : " + cnt)));
     }
 
-    private static OptionalInt win(int current, HashMap<Integer, HashMap<Integer, Integer>> graph) {
+    private static OptionalInt win(int current, HashMap<Integer, HashMap<Integer, Integer>> graph,
+                                   HashMap<HashMap<Integer, HashMap<Integer, Integer>>, Boolean> state) {
         // System.err.println("win: " + cpToString(current));
         HashMap<Integer, Integer> candidate = graph.get(current);
         if(candidate == null) {
             return OptionalInt.empty();
         }
         for(Map.Entry<Integer, Integer> e: candidate.entrySet()) {
+            if(state.size() > SEARCH_MAX) return OptionalInt.empty();
             int last = e.getKey();
             int count = e.getValue();
             if(count == 0) {
@@ -67,20 +78,25 @@ public class App {
                 deepClone(graph);
             HashMap<Integer, Integer> newCandidate = newGraph.get(current);
             newCandidate.compute(last, (k,c) -> c - 1);
-            if(lose(last, newGraph)) {
+            boolean opLose = state
+                .computeIfAbsent(newGraph, k ->
+                                 lose(last, newGraph, state));
+            if(opLose) {
                 return OptionalInt.of(last);
             }
         }
         return OptionalInt.empty();
     }
 
-    private static boolean lose(int current, HashMap<Integer, HashMap<Integer, Integer>> graph) {
+    private static boolean lose(int current, HashMap<Integer, HashMap<Integer, Integer>> graph,
+                                HashMap<HashMap<Integer, HashMap<Integer, Integer>>, Boolean> state) {
         // System.err.println("lose: " + cpToString(current));
         HashMap<Integer, Integer> candidate = graph.get(current);
         if(candidate == null) {
             return true;
         }
         for(Map.Entry<Integer, Integer> e: candidate.entrySet()) {
+            if(state.size() > SEARCH_MAX) return false;
             int last = e.getKey();
             int count = e.getValue();
             if(count == 0) {
@@ -90,7 +106,10 @@ public class App {
                 deepClone(graph);
             HashMap<Integer, Integer> newCandidate = newGraph.get(current);
             newCandidate.compute(last, (k,c) -> c - 1);
-            if(!win(last, newGraph).isPresent()) {
+            boolean opWin = state
+                .computeIfAbsent(newGraph, k ->
+                                 win(last, newGraph, state).isPresent());
+            if(!opWin) {
                 return false;
             }
         }
