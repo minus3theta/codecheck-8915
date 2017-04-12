@@ -29,7 +29,6 @@ public class App {
             int count = val.getOrDefault(last, 0);
             val.put(last, count + 1);
         }
-        // show(graph);
         HashMap<HashMap<Integer, HashMap<Integer, Integer>>, Boolean> state =
             new HashMap<>();
         int hand = (words.size() < SIZE_THRESHOLD ?
@@ -48,21 +47,8 @@ public class App {
         }
     }
 
-    private static String cpToString(int cp) {
-        return new String(new int[]{cp}, 0, 1);
-    }
-
-    private static void show(HashMap<Integer, HashMap<Integer, Integer>> graph) {
-        graph.forEach((fst,m) ->
-                      m.forEach((lst,cnt) ->
-                                System.err.println(new String(new int[]{fst}, 0, 1) +
-                                                   " -> " +
-                                                   new String(new int[]{lst}, 0, 1) + " : " + cnt)));
-    }
-
     private static OptionalInt win(int current, HashMap<Integer, HashMap<Integer, Integer>> graph,
                                    HashMap<HashMap<Integer, HashMap<Integer, Integer>>, Boolean> state) {
-        // System.err.println("win: " + cpToString(current));
         HashMap<Integer, Integer> candidate = graph.get(current);
         if(candidate == null) {
             return OptionalInt.empty();
@@ -90,7 +76,6 @@ public class App {
 
     private static boolean lose(int current, HashMap<Integer, HashMap<Integer, Integer>> graph,
                                 HashMap<HashMap<Integer, HashMap<Integer, Integer>>, Boolean> state) {
-        // System.err.println("lose: " + cpToString(current));
         HashMap<Integer, Integer> candidate = graph.get(current);
         if(candidate == null) {
             return true;
