@@ -24,6 +24,7 @@ public class App {
             int count = val.getOrDefault(last, 0);
             val.put(last, count + 1);
         }
+        // show(graph);
         int hand = win(currentLast, graph)
             .orElseGet(() -> {
                     HashMap<Integer, Integer> val = graph.get(currentLast);
@@ -31,7 +32,7 @@ public class App {
                     return val.keySet().iterator().next();
                 });
         for(String s: words) {
-            if(last(s) == hand) {
+            if(first(s) == currentLast && last(s) == hand) {
                 System.out.println(s);
                 return;
             }
@@ -51,6 +52,7 @@ public class App {
     }
 
     private static OptionalInt win(int current, HashMap<Integer, HashMap<Integer, Integer>> graph) {
+        // System.err.println("win: " + cpToString(current));
         HashMap<Integer, Integer> candidate = graph.get(current);
         if(candidate == null) {
             return OptionalInt.empty();
@@ -73,6 +75,7 @@ public class App {
     }
 
     private static boolean lose(int current, HashMap<Integer, HashMap<Integer, Integer>> graph) {
+        // System.err.println("lose: " + cpToString(current));
         HashMap<Integer, Integer> candidate = graph.get(current);
         if(candidate == null) {
             return true;
